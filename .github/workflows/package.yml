@@ -1,6 +1,7 @@
 name: Package updates
 
 on:
+  push:
   workflow_dispatch:
 
 jobs:
@@ -28,10 +29,13 @@ jobs:
           busybox find main community testing -name APKBUILD -exec sed -r -e 's|pkgdir"/lib/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/bin/|pkgdir"/usr/bin/|g' -e 's|pkgdir"/sbin/|pkgdir"/usr/bin/|g' {} +
           export CBUILD=x86_64
           echo -e "\n" | abuild-keygen
-          export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa)
-          sh -c "for pkg in main/* community/* testing/*; do cd $pkg; [ -e "./APKBUILD" ] && abuild -Frf; cd ../..;done"
+          export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa | head -1)
+          sh -c "for pkg in main/* community/* testing/*; do cd $pkg; [ -e "./APKBUILD" ] && abuild -Frf >/dev/null; cd ../..;done"
           mkdir -p dist
           cp -f ~/packages/*/x86_64/*.apk dist/
+          cd dist/
+          apk index -vU -o APKINDEX.tar.gz *.apk
+          cd ..
         shell: alpine.sh --root {0}
       - name: Deploy
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -40,4 +44,4 @@ jobs:
           automatic_release_tag: "latest"
           prerelease: true
           title: "Development Build"
-          files: dist/*.apk
+          files: dist/*
