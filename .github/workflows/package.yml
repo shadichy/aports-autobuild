@@ -35,7 +35,7 @@ jobs:
       - name: Artifact
         run: |
           mkdir -p dist
-          cp -f ~/packages/*/x86_64/*.apk dist/
+          find ~/packages -type f -name "*.apk" -exec cp -t dist/ {} +
           cd dist/
           apk index -vU -o APKINDEX.tar.gz *.apk || true
           cd ..
