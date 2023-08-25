@@ -29,7 +29,7 @@ jobs:
           export CBUILD=x86_64
           export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa | head -1)
           cd aports
-          sh -c "for repo in main community; do cd $repo && for pkg in */; do cd $pkg && abuild -Frfq >/dev/null 2>&1 || echo "Build ${pkg##*/} failed!"; cd ..; done; cd ..; done"
+          sh -c "for repo in main community; do cd $repo; for pkg in */; do cd $pkg && abuild -Frfq >/dev/null 2>&1 || echo "Build ${pkg##*/} failed!"; cd ..; done; cd ..; done"
         shell: alpine.sh --root {0}
       - name: Artifact
         run: |
