@@ -28,16 +28,17 @@ jobs:
         run: |
           export CBUILD=x86_64
           export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa | head -1)
+          mkdir pkgs
+          dist=$(ls -d ./pkgs)
+          export REPODEST=$dist
           cd aports
-          sh -c "for pkg in main/*/ community/*/; do cd "$pkg" && { abuild -Frfq || true; } >/dev/null 2>&1 && cd ../..;done;"
+          sh -c "for pkg in main/*/ community/*/; do cd "$pkg" && { abuild -FrfqP "$dist" || true; } >/dev/null 2>&1 && cd ../..;done;"
           cd ..
         shell: alpine.sh --root {0}
       - name: Artifact
         run: |
           mkdir -p dist
-          find ~/ -type f -name "*.apk" -exec cp -t dist/ {} + || true
-          find . -type f -name "*.apk" -exec cp -t dist/ {} + || true
-          find /root/ -type f -name "*.apk" -exec cp -t dist/ {} + || true
+          find ./pkgs -type f -name "*.apk" -exec cp -t dist/ {} +
           cd dist/
           apk index -vU -o APKINDEX.tar.gz *.apk || true
           cd ..
