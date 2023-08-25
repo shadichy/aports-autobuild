@@ -22,10 +22,9 @@ jobs:
         uses: jirutka/setup-alpine@v1.1.3
       - name: Install deps
         run: |
-          apk add abuild abuild-rootbld
+          apk add abuild abuild-rootbld findutils sed
           cd aports
-          busybox --ínstall -s
-          find main community testing -name APKBUILD -exec sed -r -e 's|pkgdir"/lib/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/bin/|pkgdir"/usr/bin/|g' -e 's|pkgdir"/sbin/|pkgdir"/usr/bin/|g' {} +
+          busybox find main community testing -name APKBUILD -exec sed -r -e 's|pkgdir"/lib/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/bin/|pkgdir"/usr/bin/|g' -e 's|pkgdir"/sbin/|pkgdir"/usr/bin/|g' {} +
           export CBUILD=x86_64
           echo -e "\n" | abuild-keygen
           export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa)
