@@ -32,7 +32,7 @@ jobs:
           dist=$(ls -d ./pkgs)
           export REPODEST=$dist
           cd aports
-          sh -c "for pkg in main/*/ community/*/; do cd "$pkg" && { abuild -FrfqP "$dist" || true; } 2>&1 | busybox grep -E "^>>> ERROR:" && cd ../..;done;"
+          sh -c "for pkg in main/*/ community/*/; do cd "$pkg" && { abuild -FrfqP "$dist" 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true; } && cd ../..;done;"
           cd ..
           ls $dist
         shell: alpine.sh --root {0}
