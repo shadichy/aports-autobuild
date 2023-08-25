@@ -31,12 +31,7 @@ jobs:
           mkdir pkgs
           dist=$(ls -d ./pkgs)
           export REPODEST=$dist
-          cd aports
-          pwd
-          ls
-          sh -c "for pkg in main/*/ community/*/; do cd "$pkg"; pwd; ls; { abuild -FrfqP "$dist" 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true; }; cd ../..; pwd; ls;break;done;"
-          cd ..
-          ls $dist
+          sh -c "cd aports;for pkg in main/*/ community/*/; do cd '\$pkg'; { abuild -FrfqP '$dist' 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true; }; cd ../..;done;cd .."
         shell: alpine.sh --root {0}
       - name: Artifact
         run: |
