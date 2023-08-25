@@ -13,19 +13,26 @@ jobs:
         with:
           repository: alpinelinux/aports
           path: aports
-          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup
         uses: jirutka/setup-alpine@v1.1.3
-      - name: Build
+      - name: Install deps
         run: |
           apk add abuild abuild-rootbld findutils sed
           cd aports
-          busybox find main community testing -name APKBUILD -exec sed -r -e 's|pkgdir"/lib/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/bin/|pkgdir"/usr/bin/|g' -e 's|pkgdir"/sbin/|pkgdir"/usr/bin/|g' {} +
-          export CBUILD=x86_64
+          find main community testing -name APKBUILD -exec sed -ri -e 's|pkgdir"/lib/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/bin/|pkgdir"/usr/bin/|g' -e 's|pkgdir"/sbin/|pkgdir"/usr/bin/|g' {} +
           echo -e "\n" | abuild-keygen
+          cd ..
+        shell: alpine.sh --root {0}
+      - name: Build
+        run: |
+          export CBUILD=x86_64
           export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa | head -1)
-          sh -c "for pkg in main/* community/* testing/*; do cd $pkg; abuild -Frf >/dev/null 2>&1 || echo "Build ${pkg##*/} failed!"; cd ../..;done"
+          cd aports
+          sh -c "for repo in main community; do cd $repo && for pkg in */; do cd $pkg && abuild -Frfq >/dev/null 2>&1 || echo "Build ${pkg##*/} failed!"; cd ..; done; cd ..; done"
+        shell: alpine.sh --root {0}
+      - name: Artifact
+        run: |
           mkdir -p dist
           cp -f ~/packages/*/x86_64/*.apk dist/
           cd dist/
