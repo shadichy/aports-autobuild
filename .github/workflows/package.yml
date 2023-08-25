@@ -1,6 +1,7 @@
 name: Package updates
 
-on: push
+on:
+  workflow_dispatch:
 
 jobs:
   update-packages:
@@ -29,6 +30,8 @@ jobs:
           echo -e "\n" | abuild-keygen
           export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa)
           sh -c "for pkg in main/* community/* testing/*; do cd $pkg; abuild -Frf; cd ../..;done"
+          mkdir -p dist
+          cp -f ~/packages/*/x86_64/*.apk dist/
         shell: alpine.sh --root {0}
       - name: Deploy
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -37,4 +40,4 @@ jobs:
           automatic_release_tag: "latest"
           prerelease: true
           title: "Development Build"
-          files: ~/packages/*/x86_64/*.apk
+          files: dist/*.apk
