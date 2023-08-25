@@ -14,15 +14,23 @@ jobs:
           repository: alpinelinux/aports
           path: aports
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clone gearlock
+        uses: actions/checkout@v3
+        with:
+          repository: Yuunix-Team/gearlock-core
+          path: gearlock
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup
         uses: jirutka/setup-alpine@v1.1.3
       - name: Install deps
         run: |
           apk add abuild abuild-rootbld findutils sed
           cd aports
-          find main community testing -name APKBUILD -exec sed -ri -e 's|pkgdir"/lib/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/bin/|pkgdir"/usr/bin/|g' -e 's|pkgdir"/sbin/|pkgdir"/usr/bin/|g' {} +
+          find main community testing -name APKBUILD -exec sed -ri -e 's|pkgdir"/lib(64)?/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/s?bin/|pkgdir"/usr/bin/|g' {} +
           echo -e "\n" | abuild-keygen
           cd ..
+          addgroup abuild || true
+          addgroup $USER abuild || true
         shell: alpine.sh --root {0}
       - name: Build
         run: |
@@ -32,7 +40,17 @@ jobs:
           dist=$(ls -d ./pkgs)
           export REPODEST=$dist
           cd aports
-          for pkg in main/*/ community/*/; do cd $pkg; { abuild -FrfqP "$dist" 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true; }; cd ../..;done
+          for pkg in main/*/ community/*/; do cd $pkg; echo "Building package ${pkg##*/}"; { abuild -FrfqP "$dist" 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true; }; cd ../..;done
+          cd ..
+        shell: alpine.sh --root {0}
+      - name: Build gearlock
+        run: |
+          export CBUILD=x86_64
+          export PACKAGER_PRIVKEY=$(ls -d ~/.abuild/*.rsa | head -1)
+          export REPODEST=$dist
+          export DEBUG=1
+          cd gearlock
+          abuild -FrfqP "$dist" 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true
           cd ..
         shell: alpine.sh --root {0}
       - name: Artifact
