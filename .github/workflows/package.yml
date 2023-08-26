@@ -8,6 +8,10 @@ jobs:
   update-packages:
     runs-on: ubuntu-latest
     steps:
+      - name: Clone self
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Clone repository
         uses: actions/checkout@v3
         with:
@@ -25,10 +29,7 @@ jobs:
       - name: Install deps
         run: |
           apk add abuild abuild-rootbld findutils sed grep gawk coreutils 
-          cd aports
-          find main community -name APKBUILD -exec sed -ri -e 's|pkgdir"/lib(64)?/|pkgdir"/usr/lib/|g' -e 's|pkgdir"/s?bin/|pkgdir"/usr/bin/|g' -e 's|amove lib/|amove usr/lib|g' -e 's|amove s?bin/|amove usr/bin|g' {} +
           echo -e "\n" | abuild-keygen
-          cd ..
           addgroup abuild || true
           addgroup $USER abuild || true
         shell: alpine.sh --root {0}
@@ -39,6 +40,7 @@ jobs:
           mkdir pkgs
           dist=$(ls -d ./pkgs)
           export REPODEST=$dist
+          export PATH=$(pwd):$PATH
           cd aports
           for repo in main community; do
             cd $repo
