@@ -45,7 +45,8 @@ jobs:
             for pkg in busybox alpine-baselayout alpine-keys zlib apk-tools axel readline bash brotli lzo btrfs-progs cpulimit json-c popt cryptsetup dialog e2fsprogs kmod lddtree mdev-conf mkinitfs grub lrzip lz4 lzop libffi pcre2 glib pcre slang libssh2 mc nano ncurses ntfs-3g os-prober parted xz zstd pciutils libgpg-error libassuan pinentry libgcrypt gmp nettle libunistring libidn2 p11-kit libtasn1 gnutls libksba gdbm npth gnupg squashfs-tools openssl musl attr fakeroot lzip patch pkgconf tar ca-certificates c-ares curl abuild jansson binutils file isl26 mpfr4 mpc1 gcc libc-dev make fortify-headers build-base git alpine-sdk libxml2 clang16 libaio lvm2 hfsprogs udev-init-scripts eudev mesa libpciaccess libdrm musl-fts libxau libmd libbsd libxdmcp libxcb libevdev mtdev xf86-input-libinput encodings font-alias libfontenc libpng freetype mkfontscale fontconfig util-macros font-cursor-misc font-misc-misc libx11 libxshmfence libxext libice libsm libxt libxmu xauth xmodmap xrdb xinit libxkbfile xkbcomp xkeyboard-config libxfixes libxxf86vm libxfont2 libepoxy pixman libxcvt xorg-server kbd libxi libxtst xf86-input-synaptics alsa-ucm-conf alsa-lib alsa-utils brightnessctl shared-mime-info libjpeg-turbo libwebp tiff gdk-pixbuf libnotify libxinerama libxrender libxrandr libxscrnsaver cairo libxft fribidi graphite2 harfbuzz pango dunst giflib libid3tag imlib2 feh libva libvdpau lcms2 libjxl opus soxr libogg libtheora libvorbis libvpx numactl xvidcore sdl2 libunibreak libass libbluray libopenmpt cjson mbedtls librist libsrt libssh libsodium sratom libdovi spirv-tools shaderc vulkan-loader libplacebo vidstab zimg libasyncns orc libsndfile speexdsp ffmpeg ffmpegthumbnailer hicolor-icon-theme libxcomposite libxcursor libxdamage at-spi2-core libxkbcommon gtk+3.0 geany htop imagemagick oniguruma jq libmpdclient mpc libao libcdio libcdio-paranoia fmt libsamplerate jack libmad libmodplug libnfs libunwind yaml libcamera libuv webrtc-audio-processing speex libshout talloc tevent lmdb ldb skalibs linux-pam mpd libxpresent libxv libarchive libdvdcss libdvdread libdvdnav luajit mpv ncmpcpp neofetch librsvg xcb-util startup-notification openbox libsigc++ glibmm atkmm sound-theme-freedesktop libcanberra cairomm pangomm gtkmm3 json-glib pavucontrol playerctl psmisc mpdecimal python3 pyc qt5-qtbase xcb-util-image xcb-util-renderutil xcb-util-cursor xcb-util-wm rofi rsync perl libptytty rxvt-unicode scrot desktop-file-utils libexif libxfce4util libgudev libgtop xfconf libxfce4ui thunar thunar-archive-plugin thunar-media-tags-plugin thunar-volman tint2 bubblewrap dbus xdg-dbus-proxy libsecret gcr gnome-keyring libwpe libwpebackend-fdo libavif flite graphene gstreamer gst-plugins-base imath soundtouch libraw1394 libusb libdc1394 libde265 tslib directfb faac fdk-aac libfreeaptx gsm libldac neon libnice openjpeg sbc spandsp libsrtp vo-aacenc vo-amrwbenc gst-plugins-bad hyphen libmanette libseccomp gsettings-desktop-schemas duktape libproxy glib-networking libpsl libsoup3 libxslt webkit2gtk-4.1 libgepub libgsf libopenraw poppler tumbler gc w3m wireless-tools xautolock xclip xset xprop xdg-utils xcb-util-keysyms qt5-qtdeclarative qt5-qtwayland wayland ; do
               cd $pkg
               echo "Building package $(busybox basename $pkg)"
-              { abuild -FrfqP "$dist" 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true; }
+              abuild -F -f -q deps
+              abuild -F -f -q -d -P "$dist" || true;
               cd ..
             done
             cd ..
@@ -59,7 +60,8 @@ jobs:
           export REPODEST=$dist
           export DEBUG=1
           cd gearlock
-          abuild -FrfqP "$dist" 2>&1 | busybox grep "ERROR:" | busybox grep -vi index || true
+          abuild -F -f -q deps
+          abuild -F -f -q -d -P "$dist" || true
           cd ..
         shell: alpine.sh --root {0}
       - name: Artifact
