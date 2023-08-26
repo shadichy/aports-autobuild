@@ -28,7 +28,7 @@ jobs:
         uses: jirutka/setup-alpine@v1.1.3
       - name: Install deps
         run: |
-          apk add abuild abuild-rootbld findutils sed grep gawk coreutils 
+          apk add abuild abuild-rootbld findutils sed grep gawk coreutils alpine-sdk clang
           echo -e "\n" | abuild-keygen
           addgroup abuild || true
           addgroup $USER abuild || true
@@ -40,6 +40,7 @@ jobs:
           mkdir pkgs
           dist=$(ls -d ./pkgs)
           export REPODEST=$dist
+          export LLVM=1
           export PATH=$(pwd):$PATH
           cd aports
           for repo in main community; do
